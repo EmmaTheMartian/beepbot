@@ -3,6 +3,14 @@ import dotenv
 import git
 import hmac
 import hashlib
+import os
+
+dotenv.load_dotenv()
+
+BOT_USERNAME = os.environ['BOT_USERNAME']
+BOT_PASSWORD = os.environ['BOT_PASSWORD']
+RELOAD_REPO_SECRET = os.environ['RELOAD_REPO_SECRET']
+BEEP_WEBHOOK_SECRET = os.environ['BEEP_WEBHOOK_SECRET']
 
 app = flask.Flask(__name__)
 
@@ -23,7 +31,7 @@ def webhook():
 @app.route('/update', methods = ['POST'])
 def update():
 	x_hub_signature = flask.request.headers.get('X-Hub-Signature')
-	if not is_valid_signature(x_hub_signature, flask.request.data, flask.w_secret):
+	if not is_valid_signature(x_hub_signature, flask.request.data, update_webhook_secret):
 		return 'invalid signature', 418
 
 	if flask.request.method == 'POST':
