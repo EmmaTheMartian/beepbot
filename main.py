@@ -13,6 +13,7 @@ RELOAD_REPO_SECRET = os.environ['RELOAD_REPO_SECRET']
 BEEP_WEBHOOK_SECRET = os.environ['BEEP_WEBHOOK_SECRET']
 
 app = flask.Flask(__name__)
+repo = git.Repo('./')
 
 def is_valid_signature(x_hub_signature, data, private_key) -> bool:
 	# x_hub_signature and data are from the webhook payload
@@ -31,21 +32,19 @@ def webhook():
 @app.route('/update', methods = ['POST'])
 def update():
 	x_hub_signature = flask.request.headers.get('X-Hub-Signature')
-	if not is_valid_signature(x_hub_signature, flask.request.data, update_webhook_secret):
+	if not is_valid_signature(x_hub_signature, flask.request.data, RELOAD_REPO_SECRET):
 		return 'invalid signature', 418
 
 	if flask.request.method == 'POST':
 		print('-> updating bot...')
-		repo = git.Repo('/home/beeper/beepbot/')
-		origin = repo.remotes.origin
-		origin.pull()
+		repo.remotes.origin.pull()
 		return 'updated successfully'
 	else:
 		return 'wrong event type', 400
 
 @app.route('/')
 def index():
-	return 'webapp running :sunglasses:'
+	return 'webapp running :sunglasses: (commit: ' + repo.commit().hexsha + ')'
 
 if __name__ == '__main__':
 	app.run()
