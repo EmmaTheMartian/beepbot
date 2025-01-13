@@ -35,5 +35,9 @@ def update():
 	else:
 		return 'wrong event type', 400
 
+@app.route('/')
+def index():
+	return 'webapp running :sunglasses:'
+
 if __name__ == '__main__':
 	app.run()
