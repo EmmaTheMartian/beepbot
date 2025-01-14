@@ -8,6 +8,7 @@ import requests
 import requests.cookies
 import datetime
 
+
 dotenv.load_dotenv()
 
 BOT_USERNAME = os.environ['BOT_USERNAME']
@@ -29,6 +30,7 @@ def is_valid_signature(x_hub_signature, data, private_key) -> bool:
 	encoded_key = bytes(private_key, 'latin-1')
 	mac = hmac.new(encoded_key, msg = data, digestmod = algorithm)
 	return hmac.compare_digest(mac.hexdigest(), github_signature)
+
 
 @app.route('/webhook', methods = ['POST'])
 def webhook():
@@ -67,11 +69,13 @@ def update():
 	repo.remotes.origin.pull()
 	return 'updated successfully'
 
+
 @app.route('/')
 def index():
 	return 'bot running :sunglasses: (commit: ' + repo.commit().hexsha + ')'
 
-if __name__ == '__main__':
+
+def main():
 	start = datetime.datetime.now()
 
 	# log into beep
@@ -97,3 +101,6 @@ if __name__ == '__main__':
 
 	print('-> logging out...')
 	requests.post(BEEP_URL + '/api/user/full_logout')
+
+
+main()
