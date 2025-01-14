@@ -101,10 +101,11 @@ print('-> logged in as: ' + whoami)
 
 # make a "bot online" post
 stop = datetime.datetime.now() - start
-session.post(BEEP_URL + '/api/post/new_post', data = {
-	'title': 'bot online',
-	'body': f'took {stop.seconds}s to start.'
-})
+print(f'-> took {stop.seconds}s to start.')
+# session.post(BEEP_URL + '/api/post/new_post', data = {
+# 	'title': 'bot online',
+# 	'body': f'took {stop.seconds}s to start.'
+# })
 
 # run app
 # uncomment if you are not using wsgi
