@@ -7,21 +7,25 @@ import os
 import requests
 import requests.cookies
 import datetime
+import atexit
 
 
+# .env variables
 dotenv.load_dotenv()
-
 BOT_USERNAME = os.environ['BOT_USERNAME']
 BOT_PASSWORD = os.environ['BOT_PASSWORD']
 RELOAD_REPO_SECRET = os.environ['RELOAD_REPO_SECRET']
 BEEP_WEBHOOK_SECRET = os.environ['BEEP_WEBHOOK_SECRET']
 BEEP_URL = os.environ['BEEP_URL']
 
+# globals
 app = Flask(__name__)
 repo = git.Repo('./')
 session = requests.Session()
+whoami = None
 
 
+# utility functions
 def is_valid_signature(x_hub_signature, data, private_key) -> bool:
 	# x_hub_signature and data are from the webhook payload
 	# private key is your webhook secret
@@ -32,6 +36,7 @@ def is_valid_signature(x_hub_signature, data, private_key) -> bool:
 	return hmac.compare_digest(mac.hexdigest(), github_signature)
 
 
+# routes
 @app.route('/webhook', methods = ['POST'])
 def webhook():
 	x_hub_signature = request.headers.get('X-Hub-Signature')
@@ -72,35 +77,35 @@ def update():
 
 @app.route('/')
 def index():
-	return 'bot running :sunglasses: (commit: ' + repo.commit().hexsha + ')'
+	return f'bot running :sunglasses: (commit: {repo.commit().hexsha})\nlogged in as: {whoami}'
 
 
-def main():
-	start = datetime.datetime.now()
-
-	# log into beep
-	print('-> logging in...')
-	response = session.post(BEEP_URL + '/api/user/login', data = {
-		'username': BOT_USERNAME,
-		'password': BOT_PASSWORD
-	})
-
-	whoami = session.get(BEEP_URL + '/api/user/whoami')
-	print('-> logged in as: ' + whoami.text)
-
-	stop = datetime.datetime.now() - start
-
-	# make a test post
-	session.post(BEEP_URL + '/api/post/new_post', data = {
-		'title': 'bot online',
-		'body': f'took {stop.seconds}s to start.'
-	})
-
-	# run app
-	app.run()
-
+# main code
+def _atexit():
 	print('-> logging out...')
 	requests.post(BEEP_URL + '/api/user/full_logout')
+atexit.register(_atexit)
 
+start = datetime.datetime.now()
 
-main()
+# log into beep
+print('-> logging in...')
+response = session.post(BEEP_URL + '/api/user/login', data = {
+	'username': BOT_USERNAME,
+	'password': BOT_PASSWORD
+})
+
+# log who we are (useful for debugging)
+whoami = session.get(BEEP_URL + '/api/user/whoami').text
+print('-> logged in as: ' + whoami)
+
+# make a "bot online" post
+stop = datetime.datetime.now() - start
+session.post(BEEP_URL + '/api/post/new_post', data = {
+	'title': 'bot online',
+	'body': f'took {stop.seconds}s to start.'
+})
+
+# run app
+# uncomment if you are not using wsgi
+# app.run()
