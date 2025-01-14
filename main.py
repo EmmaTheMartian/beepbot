@@ -44,8 +44,8 @@ def webhook():
 
 	data = request.get_json()
 	commits = data['commits']
-	body = f'{data['before']} -> {data['after']}\n---\n'
-	body += '\n'.join([f'- {it['message']} ({it['url']})' for it in commits])
+	body = f"{data['before']} -> {data['after']}\n---\n"
+	body += '\n'.join([f"- {it['message']} ({it['url']})" for it in commits])
 	session.post(BEEP_URL + '/api/post/new_post', timeout = 10, data = {
 		'title': f'pushed {len(commits)} commit{'s' if len(commits) > 1 else ''}',
 		'body': body
