@@ -33,7 +33,7 @@ def is_valid_signature(x_hub_signature, data, private_key) -> bool:
 @app.route('/webhook', methods = ['POST'])
 def webhook():
 	x_hub_signature = request.headers.get('X-Hub-Signature')
-	if not is_valid_signature(x_hub_signature, request.data, RELOAD_REPO_SECRET):
+	if not is_valid_signature(x_hub_signature, request.data, BEEP_WEBHOOK_SECRET):
 		return 'invalid signature', 418
 
 	if request.method != 'POST':
